@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Interactive Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --surface: #1a1a2e;
+            --surface2: #22223a;
+            --accent: #7c3aed;
+            --accent2: #a78bfa;
+            --green: #10b981;
+            --red: #ef4444;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --border: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .bg-glow {
+            position: fixed; top: -200px; left: -200px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+            animation: float 8s ease-in-out infinite;
+        }
+        .bg-glow2 {
+            position: fixed; bottom: -200px; right: -200px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+            animation: float 10s ease-in-out infinite reverse;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(40px, 30px); }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent2), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .header p { color: var(--muted); font-size: 1rem; }
+
+        /* Topic selector */
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .topic-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+        .topic-btn:hover {
+            border-color: var(--accent);
+            background: var(--surface2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(124,58,237,0.15);
+        }
+        .topic-btn.active {
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            border-color: transparent;
+            box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+        }
+        .topic-btn.all-btn {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--surface2), var(--surface));
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .topic-btn.all-btn.active {
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+        }
+
+        /* Quiz controls */
+        .controls {
+            display: flex; gap: 1rem; margin-bottom: 2rem;
+            flex-wrap: wrap; align-items: center;
+            justify-content: center;
+        }
+        .start-btn, .restart-btn {
+            padding: 0.85rem 2rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .start-btn {
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            color: white;
+            box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+        }
+        .start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(124,58,237,0.4); }
+        .restart-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .restart-btn:hover { border-color: var(--accent); background: var(--surface2); }
+
+        /* Progress bar */
+        .progress-bar-container {
+            background: var(--surface);
+            border-radius: 100px;
+            height: 8px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            border-radius: 100px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Question card */
+        .question-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .question-topic {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(167,139,250,0.2));
+            color: var(--accent2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+        }
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Options */
+        .options { display: flex; flex-direction: column; gap: 0.65rem; }
+        .option-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: left;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .option-btn:hover:not(.disabled) {
+            border-color: var(--accent);
+            background: rgba(124,58,237,0.1);
+            transform: translateX(4px);
+        }
+        .option-label {
+            min-width: 28px; height: 28px;
+            border-radius: 8px;
+            background: rgba(124,58,237,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.8rem;
+            color: var(--accent2);
+            flex-shrink: 0;
+        }
+        .option-btn.correct {
+            border-color: var(--green);
+            background: rgba(16,185,129,0.1);
+        }
+        .option-btn.correct .option-label {
+            background: var(--green); color: white;
+        }
+        .option-btn.wrong {
+            border-color: var(--red);
+            background: rgba(239,68,68,0.1);
+        }
+        .option-btn.wrong .option-label {
+            background: var(--red); color: white;
+        }
+        .option-btn.disabled { cursor: default; opacity: 0.7; }
+
+        /* Explanation */
+        .explanation {
+            margin-top: 1.25rem;
+            padding: 1rem 1.25rem;
+            background: rgba(124,58,237,0.08);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 10px 10px 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--muted);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .explanation strong { color: var(--accent2); }
+
+        .next-btn {
+            margin-top: 1.25rem;
+            padding: 0.75rem 1.75rem;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .next-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(124,58,237,0.3); }
+
+        /* Results */
+        .results-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            animation: slideIn 0.4s ease;
+        }
+        .score-circle {
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative;
+        }
+        .score-circle::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 50%;
+            padding: 4px;
+            background: conic-gradient(var(--accent) var(--pct), var(--surface2) var(--pct));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+        }
+        .score-num { font-size: 2.8rem; font-weight: 800; color: var(--accent2); }
+        .score-total { font-size: 0.95rem; color: var(--muted); }
+        .results-card h2 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+        .results-card p { color: var(--muted); margin-bottom: 1.5rem; }
+
+        .topic-scores {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.6rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        .topic-score-item {
+            background: var(--surface2);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topic-score-item .score-badge {
+            background: rgba(124,58,237,0.2);
+            color: var(--accent2);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .topic-grid { grid-template-columns: 1fr 1fr; }
+            .question-card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="bg-glow2"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🧠 DSA Quiz</h1>
+            <p>Test your knowledge on Advanced Data Structures & Algorithms</p>
+        </div>
+
+        <!-- Topic Selection -->
+        <div id="topicSelect">
+            <div class="topic-grid">
+                <button class="topic-btn all-btn active" data-topic="all" onclick="toggleTopic(this)">📚 All Topics</button>
+                <button class="topic-btn" data-topic="heap-sort" onclick="toggleTopic(this)">Heap Sort</button>
+                <button class="topic-btn" data-topic="k-ary-heap" onclick="toggleTopic(this)">K-ary Heap</button>
+                <button class="topic-btn" data-topic="bfs" onclick="toggleTopic(this)">BFS</button>
+                <button class="topic-btn" data-topic="dfs" onclick="toggleTopic(this)">DFS</button>
+                <button class="topic-btn" data-topic="bellman-ford" onclick="toggleTopic(this)">Bellman-Ford</button>
+                <button class="topic-btn" data-topic="binomial-heap" onclick="toggleTopic(this)">Binomial Heap</button>
+                <button class="topic-btn" data-topic="boundary-traversal" onclick="toggleTopic(this)">Boundary Traversal</button>
+                <button class="topic-btn" data-topic="dials-algo" onclick="toggleTopic(this)">Dial's Algorithm</button>
+                <button class="topic-btn" data-topic="recover-bst" onclick="toggleTopic(this)">Recover BST</button>
+                <button class="topic-btn" data-topic="topological-sort" onclick="toggleTopic(this)">Topological Sort</button>
+                <button class="topic-btn" data-topic="vertical-order" onclick="toggleTopic(this)">Vertical Order Traversal</button>
+                <button class="topic-btn" data-topic="views-of-tree" onclick="toggleTopic(this)">Views of Tree</button>
+                <button class="topic-btn" data-topic="winner-tree" onclick="toggleTopic(this)">Winner Tree</button>
+            </div>
+            <div class="controls">
+                <button class="start-btn" onclick="startQuiz()">🚀 Start Quiz</button>
+            </div>
+        </div>
+
+        <!-- Quiz Area -->
+        <div id="quizArea" class="hidden">
+            <div class="progress-text">
+                <span id="progressLabel">Question 1 of 10</span>
+                <span id="scoreLabel">Score: 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="questionContainer"></div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden"></div>
+    </div>
+
+<script>
+const questions = [
+    // ===== HEAP SORT =====
+    {
+        topic: "heap-sort", topicName: "Heap Sort",
+        q: "What type of binary heap does Heap Sort typically use to sort in ascending order?",
+        options: ["Min-Heap", "Max-Heap", "Fibonacci Heap", "Binomial Heap"],
+        answer: 1,
+        explanation: "Heap Sort uses a <strong>Max-Heap</strong>. The maximum element is extracted from the root and placed at the end of the array, then the heap is restored. This produces ascending order."
+    },
+    {
+        topic: "heap-sort", topicName: "Heap Sort",
+        q: "What is the time complexity of Heap Sort?",
+        options: ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+        answer: 1,
+        explanation: "Heap Sort runs in <strong>O(n log n)</strong> — building the heap is O(n), and each of the n extract-max operations takes O(log n)."
+    },
+    {
+        topic: "heap-sort", topicName: "Heap Sort",
+        q: "What does the 'heapify' operation do?",
+        options: [
+            "Sorts the entire array",
+            "Ensures a subtree satisfies the heap property",
+            "Inserts a new element into the heap",
+            "Removes the root element"
+        ],
+        answer: 1,
+        explanation: "<strong>Heapify</strong> adjusts elements in a subtree so the parent is larger (max-heap) or smaller (min-heap) than its children, maintaining the heap property."
+    },
+    {
+        topic: "heap-sort", topicName: "Heap Sort",
+        q: "What is the space complexity of Heap Sort?",
+        options: ["O(n)", "O(n log n)", "O(1)", "O(log n)"],
+        answer: 2,
+        explanation: "Heap Sort is an <strong>in-place</strong> algorithm — it sorts the array without needing extra space, giving O(1) auxiliary space complexity."
+    },
+    {
+        topic: "heap-sort", topicName: "Heap Sort",
+        q: "In a max-heap array representation, where is the maximum element always located?",
+        options: ["Last index", "Middle index", "Root (index 0)", "Random position"],
+        answer: 2,
+        explanation: "In a max-heap, the <strong>root node</strong> (index 0) always contains the maximum element, which is the key property exploited by Heap Sort."
+    },
+
+    // ===== K-ARY HEAP =====
+    {
+        topic: "k-ary-heap", topicName: "K-ary Heap",
+        q: "A K-ary heap generalizes a binary heap by giving each node how many children?",
+        options: ["2 children", "K children", "K-1 children", "2K children"],
+        answer: 1,
+        explanation: "A <strong>K-ary heap</strong> is a generalization of a binary heap where each node has <strong>K children</strong> instead of 2."
+    },
+    {
+        topic: "k-ary-heap", topicName: "K-ary Heap",
+        q: "In a 0-indexed K-ary heap, what is the parent of the node at index i?",
+        options: ["(i-1)/2", "(i-1)/k", "i/k", "(i+1)/k"],
+        answer: 1,
+        explanation: "In a K-ary heap with 0-based indexing, the parent of node at index i is at <strong>(i-1)/k</strong> (integer division)."
+    },
+    {
+        topic: "k-ary-heap", topicName: "K-ary Heap",
+        q: "In a 0-indexed K-ary heap, the children of node at index i are at indices:",
+        options: ["2i+1 to 2i+2", "ki+1 to ki+k", "i+1 to i+k", "ki to ki+k-1"],
+        answer: 1,
+        explanation: "Children of node at index i are at indices <strong>(k×i)+1, (k×i)+2, ..., (k×i)+k</strong>."
+    },
+    {
+        topic: "k-ary-heap", topicName: "K-ary Heap",
+        q: "What is the last non-leaf node index in a K-ary heap of size n?",
+        options: ["(n-1)/k", "(n-2)/k", "n/k - 1", "(n-1)/2"],
+        answer: 1,
+        explanation: "The last non-leaf node in a K-ary heap of size n is at index <strong>(n-2)/k</strong>."
+    },
+
+    // ===== BFS =====
+    {
+        topic: "bfs", topicName: "BFS",
+        q: "Which data structure does BFS primarily use?",
+        options: ["Stack", "Queue", "Priority Queue", "Linked List"],
+        answer: 1,
+        explanation: "BFS uses a <strong>Queue</strong> (FIFO order) to explore vertices level by level."
+    },
+    {
+        topic: "bfs", topicName: "BFS",
+        q: "What is the time complexity of BFS?",
+        options: ["O(V)", "O(E)", "O(V + E)", "O(V × E)"],
+        answer: 2,
+        explanation: "BFS visits every vertex and every edge once, giving a time complexity of <strong>O(V + E)</strong>."
+    },
+    {
+        topic: "bfs", topicName: "BFS",
+        q: "Which of the following is NOT a typical application of BFS?",
+        options: [
+            "Finding shortest path in unweighted graph",
+            "Web crawling",
+            "Detecting negative weight cycles",
+            "Finding neighboring nodes in peer-to-peer networks"
+        ],
+        answer: 2,
+        explanation: "Detecting negative weight cycles is done by <strong>Bellman-Ford</strong>, not BFS. BFS is used for shortest paths in unweighted graphs, web crawling, and P2P networks."
+    },
+    {
+        topic: "bfs", topicName: "BFS",
+        q: "In BFS, each vertex is put into one of two categories. What are they?",
+        options: ["Processed / Unprocessed", "Visited / Not Visited", "Marked / Unmarked", "Open / Closed"],
+        answer: 1,
+        explanation: "BFS categorizes vertices as <strong>Visited</strong> and <strong>Not Visited</strong> to avoid processing the same vertex twice."
+    },
+
+    // ===== DFS =====
+    {
+        topic: "dfs", topicName: "DFS",
+        q: "Which data structure does DFS primarily use (either explicitly or via recursion)?",
+        options: ["Queue", "Stack", "Heap", "Hash Map"],
+        answer: 1,
+        explanation: "DFS uses a <strong>Stack</strong> — either explicitly or implicitly through the recursion call stack."
+    },
+    {
+        topic: "dfs", topicName: "DFS",
+        q: "What is the time complexity of DFS?",
+        options: ["O(V)", "O(E)", "O(V + E)", "O(V²)"],
+        answer: 2,
+        explanation: "Like BFS, DFS also visits each vertex and edge once, giving <strong>O(V + E)</strong>."
+    },
+    {
+        topic: "dfs", topicName: "DFS",
+        q: "DFS explores as _____ as possible before backtracking.",
+        options: ["widely", "deeply", "randomly", "broadly"],
+        answer: 1,
+        explanation: "DFS is <strong>Depth-First</strong> — it goes as deep as possible along a branch before backtracking to explore other branches."
+    },
+
+    // ===== BELLMAN-FORD =====
+    {
+        topic: "bellman-ford", topicName: "Bellman-Ford",
+        q: "What advantage does Bellman-Ford have over Dijkstra's algorithm?",
+        options: [
+            "It is faster",
+            "It works with negative edge weights",
+            "It uses less memory",
+            "It works for undirected graphs"
+        ],
+        answer: 1,
+        explanation: "Bellman-Ford can handle <strong>negative edge weights</strong> and also detect negative weight cycles — something Dijkstra's algorithm cannot do."
+    },
+    {
+        topic: "bellman-ford", topicName: "Bellman-Ford",
+        q: "How many times does Bellman-Ford relax all edges?",
+        options: ["V times", "V-1 times", "E times", "E-1 times"],
+        answer: 1,
+        explanation: "Bellman-Ford performs <strong>V-1 iterations</strong> of edge relaxation (V = number of vertices), since the longest simple path can have at most V-1 edges."
+    },
+    {
+        topic: "bellman-ford", topicName: "Bellman-Ford",
+        q: "What is the time complexity of the Bellman-Ford algorithm?",
+        options: ["O(V log V)", "O(V + E)", "O(VE)", "O(V²)"],
+        answer: 2,
+        explanation: "Bellman-Ford runs in <strong>O(VE)</strong> — it iterates V-1 times over all E edges."
+    },
+    {
+        topic: "bellman-ford", topicName: "Bellman-Ford",
+        q: "How does Bellman-Ford detect a negative weight cycle?",
+        options: [
+            "By checking if any distance is negative",
+            "By performing one more iteration after V-1 and checking for further improvements",
+            "By checking if the source distance changes",
+            "By using a visited array"
+        ],
+        answer: 1,
+        explanation: "After V-1 iterations, Bellman-Ford checks all edges one more time. If any distance can still be reduced, a <strong>negative weight cycle</strong> exists."
+    },
+    {
+        topic: "bellman-ford", topicName: "Bellman-Ford",
+        q: "What is the space complexity of Bellman-Ford?",
+        options: ["O(V + E)", "O(V)", "O(E)", "O(V²)"],
+        answer: 1,
+        explanation: "Bellman-Ford uses a <strong>dist[]</strong> array of size V to store shortest distances, so space complexity is <strong>O(V)</strong>."
+    },
+
+    // ===== BINOMIAL HEAP =====
+    {
+        topic: "binomial-heap", topicName: "Binomial Heap",
+        q: "A Binomial Heap is a collection of:",
+        options: ["Binary Trees", "AVL Trees", "Binomial Trees", "Red-Black Trees"],
+        answer: 2,
+        explanation: "A Binomial Heap is a <strong>collection of Binomial Trees</strong> where each tree follows the Min-Heap property."
+    },
+    {
+        topic: "binomial-heap", topicName: "Binomial Heap",
+        q: "How many nodes does a Binomial Tree of order k have?",
+        options: ["k", "2k", "2^k", "k²"],
+        answer: 2,
+        explanation: "A Binomial Tree B<sub>k</sub> has exactly <strong>2^k</strong> nodes."
+    },
+    {
+        topic: "binomial-heap", topicName: "Binomial Heap",
+        q: "What is the main operation in a Binomial Heap that all other operations use?",
+        options: ["insert()", "getMin()", "union()", "delete()"],
+        answer: 2,
+        explanation: "The <strong>union()</strong> operation is the main operation. Insert creates a single-node heap and unions it, extractMin unions subtrees, etc."
+    },
+    {
+        topic: "binomial-heap", topicName: "Binomial Heap",
+        q: "In a Binomial Heap with n = 13 nodes, which Binomial Trees are present? (13 = 1101 in binary)",
+        options: ["B0, B2, B3", "B1, B2, B3", "B0, B1, B3", "B0, B1, B2, B3"],
+        answer: 0,
+        explanation: "13 = 8 + 4 + 1 = 2³ + 2² + 2⁰, so the heap contains <strong>B0 (1 node), B2 (4 nodes), and B3 (8 nodes)</strong>."
+    },
+
+    // ===== BOUNDARY TRAVERSAL =====
+    {
+        topic: "boundary-traversal", topicName: "Boundary Traversal",
+        q: "Boundary traversal of a binary tree involves which three steps, in order?",
+        options: [
+            "Root, Leaves, Right Boundary",
+            "Left Boundary, Leaf Nodes, Right Boundary",
+            "Top View, Leaf Nodes, Bottom View",
+            "Left View, Root, Right View"
+        ],
+        answer: 1,
+        explanation: "Boundary traversal visits the <strong>Left Boundary</strong>, then <strong>Leaf Nodes</strong>, then the <strong>Right Boundary</strong> (in reverse), ensuring each node is visited once."
+    },
+    {
+        topic: "boundary-traversal", topicName: "Boundary Traversal",
+        q: "For the tree: 1(2(4,5), 3(6,7)), what is the boundary traversal?",
+        options: [
+            "1 → 2 → 3 → 4 → 5 → 6 → 7",
+            "1 → 2 → 4 → 5 → 6 → 7 → 3",
+            "4 → 2 → 1 → 3 → 7 → 6 → 5",
+            "1 → 4 → 5 → 6 → 7 → 3"
+        ],
+        answer: 1,
+        explanation: "Left boundary: 1→2→4, Leaves: 4→5→6→7, Right boundary: 7→3→1. Combined (no duplicates): <strong>1→2→4→5→6→7→3</strong>."
+    },
+    {
+        topic: "boundary-traversal", topicName: "Boundary Traversal",
+        q: "In boundary traversal, the right boundary is traversed in which direction?",
+        options: ["Top to bottom", "Bottom to top", "Left to right", "Level order"],
+        answer: 1,
+        explanation: "The right boundary is traversed <strong>bottom to top</strong> (reverse order) to maintain the anti-clockwise boundary path."
+    },
+
+    // ===== DIAL'S ALGORITHM =====
+    {
+        topic: "dials-algo", topicName: "Dial's Algorithm",
+        q: "Dial's Algorithm is an enhancement of which algorithm?",
+        options: ["Bellman-Ford", "Floyd-Warshall", "Dijkstra's", "Prim's"],
+        answer: 2,
+        explanation: "Dial's Algorithm is an enhancement of <strong>Dijkstra's Algorithm</strong>, optimized for graphs with edge weights in a limited integer range."
+    },
+    {
+        topic: "dials-algo", topicName: "Dial's Algorithm",
+        q: "What data structure does Dial's Algorithm use instead of a priority queue?",
+        options: ["Stack", "Linked List", "Buckets (arrays)", "Binary Search Tree"],
+        answer: 2,
+        explanation: "Dial's Algorithm organizes nodes into <strong>buckets</strong> based on their distance from the source, replacing the priority queue used in Dijkstra's."
+    },
+    {
+        topic: "dials-algo", topicName: "Dial's Algorithm",
+        q: "When is Dial's Algorithm particularly efficient?",
+        options: [
+            "When all edge weights are negative",
+            "When edge weights have a limited integer range",
+            "When the graph is very dense",
+            "When the graph has cycles"
+        ],
+        answer: 1,
+        explanation: "Dial's Algorithm is most efficient when edge weights are <strong>small non-negative integers in a limited range</strong>."
+    },
+
+    // ===== RECOVER BST =====
+    {
+        topic: "recover-bst", topicName: "Recover BST",
+        q: "What type of traversal is used to identify misplaced nodes when recovering a BST?",
+        options: ["Preorder", "Postorder", "Inorder", "Level Order"],
+        answer: 2,
+        explanation: "<strong>Inorder traversal</strong> of a correct BST produces a sorted sequence. By performing inorder traversal, you can identify nodes that violate the sorted order."
+    },
+    {
+        topic: "recover-bst", topicName: "Recover BST",
+        q: "How many nodes are swapped to corrupt a BST in the 'Recover BST' problem?",
+        options: ["1", "2", "3", "Any number"],
+        answer: 1,
+        explanation: "Exactly <strong>2 nodes</strong> are swapped, violating the BST property. The algorithm identifies and swaps them back."
+    },
+    {
+        topic: "recover-bst", topicName: "Recover BST",
+        q: "What is the time and space complexity of recovering BST using inorder + two-pointer approach?",
+        options: ["O(n), O(n)", "O(n log n), O(1)", "O(n), O(h)", "O(n²), O(n)"],
+        answer: 2,
+        explanation: "The inorder + two-pointer approach has time complexity <strong>O(n)</strong> and space complexity <strong>O(h)</strong> where h is the height of the tree (recursion stack)."
+    },
+    {
+        topic: "recover-bst", topicName: "Recover BST",
+        q: "What is the space complexity of Morris Traversal for BST recovery?",
+        options: ["O(n)", "O(log n)", "O(h)", "O(1)"],
+        answer: 3,
+        explanation: "<strong>Morris Traversal</strong> achieves O(1) space complexity by temporarily modifying tree pointers to traverse without a stack."
+    },
+
+    // ===== TOPOLOGICAL SORT =====
+    {
+        topic: "topological-sort", topicName: "Topological Sort",
+        q: "Topological Sort is applicable only to which type of graph?",
+        options: ["Undirected Graph", "Directed Cyclic Graph", "Directed Acyclic Graph (DAG)", "Weighted Graph"],
+        answer: 2,
+        explanation: "Topological sorting requires a <strong>Directed Acyclic Graph (DAG)</strong> — cycles would make linear ordering impossible."
+    },
+    {
+        topic: "topological-sort", topicName: "Topological Sort",
+        q: "In topological ordering, for every directed edge U → V:",
+        options: [
+            "V comes before U",
+            "U comes before V",
+            "They can appear in any order",
+            "They must be adjacent in the ordering"
+        ],
+        answer: 1,
+        explanation: "Topological sort guarantees that for every edge U → V, vertex <strong>U appears before V</strong> in the linear ordering."
+    },
+    {
+        topic: "topological-sort", topicName: "Topological Sort",
+        q: "What does 'indegree' mean in the context of directed graphs?",
+        options: [
+            "Number of outgoing edges from a node",
+            "Number of edges directed into a node",
+            "Total number of edges in the graph",
+            "The depth of a node"
+        ],
+        answer: 1,
+        explanation: "<strong>Indegree</strong> is the count of edges directed into (pointing toward) a node."
+    },
+    {
+        topic: "topological-sort", topicName: "Topological Sort",
+        q: "Kahn's algorithm for topological sort uses which data structure?",
+        options: ["Stack", "Queue", "Heap", "Linked List"],
+        answer: 1,
+        explanation: "Kahn's algorithm uses a <strong>Queue</strong> to process vertices with indegree 0, iteratively removing them and reducing neighbor indegrees."
+    },
+    {
+        topic: "topological-sort", topicName: "Topological Sort",
+        q: "Can a DAG have more than one valid topological ordering?",
+        options: ["No, only one ordering exists", "Yes, multiple valid orderings can exist", "Only if it has exactly 2 sources", "Only if all edges have equal weight"],
+        answer: 1,
+        explanation: "A DAG may have <strong>multiple valid topological orderings</strong>, as long as the relative order of vertices connected by directed edges is maintained."
+    },
+
+    // ===== VERTICAL ORDER TRAVERSAL =====
+    {
+        topic: "vertical-order", topicName: "Vertical Order Traversal",
+        q: "In vertical order traversal, nodes are grouped by their:",
+        options: ["Depth (level)", "Vertical column position", "Parent-child relationship", "Insertion order"],
+        answer: 1,
+        explanation: "Vertical order traversal groups nodes by their <strong>vertical column position</strong> — going left decreases the column, going right increases it."
+    },
+    {
+        topic: "vertical-order", topicName: "Vertical Order Traversal",
+        q: "In vertical order traversal, the root node starts at column:",
+        options: ["-1", "0", "1", "It depends on the tree"],
+        answer: 1,
+        explanation: "The root starts at <strong>column 0</strong>. Left children go to column-1, right children to column+1."
+    },
+    {
+        topic: "vertical-order", topicName: "Vertical Order Traversal",
+        q: "For the tree 1(2(4,5), 3(6,7)), what is the vertical order traversal?",
+        options: [
+            "4, 2, 1 5 6, 3, 7",
+            "1, 2, 3, 4, 5, 6, 7",
+            "4, 5, 6, 7, 2, 3, 1",
+            "1, 2 3, 4 5 6 7"
+        ],
+        answer: 0,
+        explanation: "Column -2: 4 | Column -1: 2 | Column 0: 1,5,6 | Column 1: 3 | Column 2: 7. Result: <strong>4, 2, 1 5 6, 3, 7</strong>."
+    },
+
+    // ===== VIEWS OF TREE =====
+    {
+        topic: "views-of-tree", topicName: "Views of Tree",
+        q: "For tree A(B(D,E), C(F,G)), what is the Left View?",
+        options: ["A, B, D", "A, C, G", "D, B, A, C, G", "A, B, C"],
+        answer: 0,
+        explanation: "The Left View shows the <strong>leftmost node at each level</strong>: Level 0: A, Level 1: B, Level 2: D → <strong>A, B, D</strong>."
+    },
+    {
+        topic: "views-of-tree", topicName: "Views of Tree",
+        q: "For tree A(B(D,E), C(F,G)), what is the Right View?",
+        options: ["A, B, D", "A, C, G", "G, C, A", "A, B, G"],
+        answer: 1,
+        explanation: "The Right View shows the <strong>rightmost node at each level</strong>: Level 0: A, Level 1: C, Level 2: G → <strong>A, C, G</strong>."
+    },
+    {
+        topic: "views-of-tree", topicName: "Views of Tree",
+        q: "The Top View of a binary tree shows:",
+        options: [
+            "The leftmost node at each level",
+            "All leaf nodes",
+            "The outermost nodes visible from above at each vertical level",
+            "The root and its children"
+        ],
+        answer: 2,
+        explanation: "Top View displays the <strong>first node encountered at each vertical column</strong> when viewed from above."
+    },
+    {
+        topic: "views-of-tree", topicName: "Views of Tree",
+        q: "The Horizontal View of a binary tree is essentially the same as:",
+        options: ["DFS traversal", "Level-order / BFS traversal", "Inorder traversal", "Postorder traversal"],
+        answer: 1,
+        explanation: "The Horizontal View shows nodes <strong>left to right at each level</strong>, which is level-order (BFS) traversal."
+    },
+    {
+        topic: "views-of-tree", topicName: "Views of Tree",
+        q: "How many types of views in a binary tree are discussed?",
+        options: ["3", "4", "5", "6"],
+        answer: 3,
+        explanation: "The six views are: <strong>Horizontal, Vertical, Left, Right, Top, and Bottom</strong>."
+    },
+
+    // ===== WINNER TREE =====
+    {
+        topic: "winner-tree", topicName: "Winner Tree",
+        q: "A Winner Tree is an application of which data structure?",
+        options: ["Binary Search Tree", "Binary Heap", "AVL Tree", "Graph"],
+        answer: 1,
+        explanation: "The tournament tree (Winner Tree) is an application of the <strong>binary heap</strong> data structure — specifically a complete binary tree."
+    },
+    {
+        topic: "winner-tree", topicName: "Winner Tree",
+        q: "If there are p players in a tournament tree, how many internal nodes are there?",
+        options: ["p", "p+1", "p-1", "2p"],
+        answer: 2,
+        explanation: "A tournament tree with p players (leaf nodes) has exactly <strong>p-1 internal nodes</strong>."
+    },
+    {
+        topic: "winner-tree", topicName: "Winner Tree",
+        q: "In a Winner Tree, what does each internal node store?",
+        options: [
+            "The loser of the two child matches",
+            "The winner of the two child matches",
+            "The average of children",
+            "The sum of children"
+        ],
+        answer: 1,
+        explanation: "In a Winner Tree, each internal node stores the <strong>winner</strong> (e.g., minimum value) of the match between its two children. The root holds the overall winner."
+    },
+    {
+        topic: "winner-tree", topicName: "Winner Tree",
+        q: "What is the time complexity to initialize a tournament tree with n players?",
+        options: ["O(log n)", "O(n)", "O(n log n)", "O(n²)"],
+        answer: 1,
+        explanation: "Each match takes O(1) and there are n-1 internal nodes, so initialization is <strong>O(n)</strong>."
+    },
+    {
+        topic: "winner-tree", topicName: "Winner Tree",
+        q: "What is the advantage of a Loser Tree over a Winner Tree?",
+        options: [
+            "It uses less memory",
+            "It is faster to build",
+            "Restructuring only needs examining the path from leaf to root",
+            "It can handle negative values"
+        ],
+        answer: 2,
+        explanation: "In a Loser Tree, <strong>restructuring only requires examining nodes on the path from a leaf to the root</strong>, making updates more efficient."
+    },
+];
+
+let selectedTopics = new Set(["all"]);
+let quizQuestions = [];
+let currentQ = 0;
+let score = 0;
+let answered = false;
+let topicScores = {};
+
+function toggleTopic(btn) {
+    const topic = btn.dataset.topic;
+    if (topic === "all") {
+        selectedTopics.clear();
+        selectedTopics.add("all");
+        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    } else {
+        selectedTopics.delete("all");
+        document.querySelector('.all-btn').classList.remove('active');
+        if (selectedTopics.has(topic)) {
+            selectedTopics.delete(topic);
+            btn.classList.remove('active');
+        } else {
+            selectedTopics.add(topic);
+            btn.classList.add('active');
+        }
+        if (selectedTopics.size === 0) {
+            selectedTopics.add("all");
+            document.querySelector('.all-btn').classList.add('active');
+        }
+    }
+}
+
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function startQuiz() {
+    if (selectedTopics.has("all")) {
+        quizQuestions = shuffle([...questions]);
+    } else {
+        quizQuestions = shuffle(questions.filter(q => selectedTopics.has(q.topic)));
+    }
+    if (quizQuestions.length === 0) {
+        alert("No questions available for the selected topics!");
+        return;
+    }
+    currentQ = 0; score = 0; answered = false;
+    topicScores = {};
+    document.getElementById("topicSelect").classList.add("hidden");
+    document.getElementById("results").classList.add("hidden");
+    document.getElementById("quizArea").classList.remove("hidden");
+    renderQuestion();
+}
+
+function renderQuestion() {
+    answered = false;
+    const q = quizQuestions[currentQ];
+    const total = quizQuestions.length;
+    document.getElementById("progressLabel").textContent = `Question ${currentQ + 1} of ${total}`;
+    document.getElementById("scoreLabel").textContent = `Score: ${score}`;
+    document.getElementById("progressBar").style.width = `${((currentQ) / total) * 100}%`;
+
+    const labels = ["A", "B", "C", "D"];
+    let html = `<div class="question-card">
+        <span class="question-topic">${q.topicName}</span>
+        <div class="question-text">${q.q}</div>
+        <div class="options">`;
+    q.options.forEach((opt, i) => {
+        html += `<button class="option-btn" onclick="selectAnswer(${i})" id="opt${i}">
+            <span class="option-label">${labels[i]}</span>
+            <span>${opt}</span>
+        </button>`;
+    });
+    html += `</div><div id="feedback"></div></div>`;
+    document.getElementById("questionContainer").innerHTML = html;
+}
+
+function selectAnswer(idx) {
+    if (answered) return;
+    answered = true;
+    const q = quizQuestions[currentQ];
+    const correct = q.answer;
+
+    // Track topic scores
+    if (!topicScores[q.topicName]) topicScores[q.topicName] = { correct: 0, total: 0 };
+    topicScores[q.topicName].total++;
+
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
+
+    if (idx === correct) {
+        score++;
+        topicScores[q.topicName].correct++;
+        document.getElementById(`opt${idx}`).classList.add('correct');
+    } else {
+        document.getElementById(`opt${idx}`).classList.add('wrong');
+        document.getElementById(`opt${correct}`).classList.add('correct');
+    }
+
+    document.getElementById("scoreLabel").textContent = `Score: ${score}`;
+
+    let feedbackHtml = `<div class="explanation">${q.explanation}</div>`;
+    if (currentQ < quizQuestions.length - 1) {
+        feedbackHtml += `<button class="next-btn" onclick="nextQuestion()">Next Question →</button>`;
+    } else {
+        feedbackHtml += `<button class="next-btn" onclick="showResults()">See Results 🎯</button>`;
+    }
+    document.getElementById("feedback").innerHTML = feedbackHtml;
+}
+
+function nextQuestion() {
+    currentQ++;
+    renderQuestion();
+}
+
+function showResults() {
+    document.getElementById("quizArea").classList.add("hidden");
+    const total = quizQuestions.length;
+    const pct = Math.round((score / total) * 100);
+    let grade, emoji;
+    if (pct >= 90) { grade = "Outstanding!"; emoji = "🏆"; }
+    else if (pct >= 75) { grade = "Great Job!"; emoji = "🌟"; }
+    else if (pct >= 60) { grade = "Good Effort!"; emoji = "👍"; }
+    else if (pct >= 40) { grade = "Keep Practicing!"; emoji = "📖"; }
+    else { grade = "Need More Study"; emoji = "💪"; }
+
+    let topicHtml = '';
+    for (const [name, data] of Object.entries(topicScores)) {
+        topicHtml += `<div class="topic-score-item">
+            <span>${name}</span>
+            <span class="score-badge">${data.correct}/${data.total}</span>
+        </div>`;
+    }
+
+    document.getElementById("results").innerHTML = `
+        <div class="results-card">
+            <div class="score-circle" style="--pct: ${pct}%">
+                <span class="score-num">${score}</span>
+                <span class="score-total">out of ${total}</span>
+            </div>
+            <h2>${emoji} ${grade}</h2>
+            <p>You scored ${pct}% on this attempt</p>
+            <div class="topic-scores">${topicHtml}</div>
+            <div class="controls" style="margin-top:1.5rem">
+                <button class="start-btn" onclick="startQuiz()">🔄 Try Again</button>
+                <button class="restart-btn" onclick="backToTopics()">📚 Change Topics</button>
+            </div>
+        </div>`;
+    document.getElementById("results").classList.remove("hidden");
+}
+
+function backToTopics() {
+    document.getElementById("results").classList.add("hidden");
+    document.getElementById("quizArea").classList.add("hidden");
+    document.getElementById("topicSelect").classList.remove("hidden");
+}
+</script>
+</body>
+</html>
