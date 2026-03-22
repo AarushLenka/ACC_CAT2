@@ -2,39 +2,47 @@ import java.util.*;
 
 public class VerticalOrderTraversal {
     static class Node {
-        int val; Node left, right;
-        Node(int v) { val = v; }
+        int v;
+        Node l, r;
+        Node(int v) { this.v = v; }
     }
 
-    static void verticalOrder(Node root) {
-        if (root == null) return;
-        TreeMap<Integer, List<Integer>> map = new TreeMap<>();
-        Queue<Node> nodeQ = new LinkedList<>();
-        Queue<Integer> colQ = new LinkedList<>();
-        nodeQ.add(root); colQ.add(0);
-
-        while (!nodeQ.isEmpty()) {
-            Node n = nodeQ.poll();
-            int col = colQ.poll();
-            map.computeIfAbsent(col, k -> new ArrayList<>()).add(n.val);
-            if (n.left != null) { nodeQ.add(n.left); colQ.add(col - 1); }
-            if (n.right != null) { nodeQ.add(n.right); colQ.add(col + 1); }
-        }
-
-        for (var entry : map.entrySet())
-            System.out.println("Col " + entry.getKey() + ": " + entry.getValue());
+    static Node build(Scanner sc) {
+        System.out.print("Val (-1=null): ");
+        int v = sc.nextInt();
+        if (v == -1) return null;
+        Node n = new Node(v);
+        System.out.println("--Left of " + v + "--");
+        n.l = build(sc);
+        System.out.println("--Right of " + v + "--");
+        n.r = build(sc);
+        return n;
     }
 
     public static void main(String[] args) {
-        //       1
-        //      / \
-        //     2   3
-        //    / \ / \
-        //   4  5 6  7
-        Node root = new Node(1);
-        root.left = new Node(2); root.right = new Node(3);
-        root.left.left = new Node(4); root.left.right = new Node(5);
-        root.right.left = new Node(6); root.right.right = new Node(7);
-        verticalOrder(root);
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Build tree:");
+        Node root = build(sc);
+        if (root == null) return;
+        TreeMap<Integer, List<Integer>> map = new TreeMap<>();
+        Queue<Node> nq = new LinkedList<>();
+        Queue<Integer> cq = new LinkedList<>();
+        nq.add(root);
+        cq.add(0);
+        while (!nq.isEmpty()) {
+            Node n = nq.poll();
+            int c = cq.poll();
+            map.computeIfAbsent(c, k -> new ArrayList<>()).add(n.v);
+            if (n.l != null) {
+                nq.add(n.l);
+                cq.add(c - 1);
+            }
+            if (n.r != null) {
+                nq.add(n.r);
+                cq.add(c + 1);
+            }
+        }
+        for (var e : map.entrySet())
+            System.out.println("Col " + e.getKey() + ": " + e.getValue());
     }
 }

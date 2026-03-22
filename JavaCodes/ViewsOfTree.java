@@ -2,85 +2,94 @@ import java.util.*;
 
 public class ViewsOfTree {
     static class Node {
-        int val; Node left, right;
-        Node(int v) { val = v; }
+        int v;
+        Node l, r;
+        Node(int v) { this.v = v; }
     }
 
-    // Left View — first node at each level
+    static Node build(Scanner sc) {
+        System.out.print("Val (-1=null): ");
+        int v = sc.nextInt();
+        if (v == -1) return null;
+        Node n = new Node(v);
+        System.out.println("--Left of " + v + "--");
+        n.l = build(sc);
+        System.out.println("--Right of " + v + "--");
+        n.r = build(sc);
+        return n;
+    }
+
     static void leftView(Node root) {
-        if (root == null) return;
-        Queue<Node> q = new LinkedList<>(); q.add(root);
-        System.out.print("Left View: ");
+        Queue<Node> q = new LinkedList<>();
+        q.add(root);
+        System.out.print("Left: ");
         while (!q.isEmpty()) {
-            int size = q.size();
-            for (int i = 0; i < size; i++) {
+            int sz = q.size();
+            for (int i = 0; i < sz; i++) {
                 Node n = q.poll();
-                if (i == 0) System.out.print(n.val + " ");
-                if (n.left != null) q.add(n.left);
-                if (n.right != null) q.add(n.right);
+                if (i == 0)
+                    System.out.print(n.v + " ");
+                if (n.l != null) q.add(n.l);
+                if (n.r != null) q.add(n.r);
             }
         }
         System.out.println();
     }
 
-    // Right View — last node at each level
     static void rightView(Node root) {
-        if (root == null) return;
-        Queue<Node> q = new LinkedList<>(); q.add(root);
-        System.out.print("Right View: ");
+        Queue<Node> q = new LinkedList<>();
+        q.add(root);
+        System.out.print("Right: ");
         while (!q.isEmpty()) {
-            int size = q.size();
-            for (int i = 0; i < size; i++) {
+            int sz = q.size();
+            for (int i = 0; i < sz; i++) {
                 Node n = q.poll();
-                if (i == size - 1) System.out.print(n.val + " ");
-                if (n.left != null) q.add(n.left);
-                if (n.right != null) q.add(n.right);
+                if (i == sz - 1)
+                    System.out.print(n.v + " ");
+                if (n.l != null) q.add(n.l);
+                if (n.r != null) q.add(n.r);
             }
         }
         System.out.println();
     }
 
-    // Top View — first node seen at each column
     static void topView(Node root) {
-        if (root == null) return;
         TreeMap<Integer, Integer> map = new TreeMap<>();
-        Queue<Node> nq = new LinkedList<>(); Queue<Integer> cq = new LinkedList<>();
-        nq.add(root); cq.add(0);
+        Queue<Node> nq = new LinkedList<>();
+        Queue<Integer> cq = new LinkedList<>();
+        nq.add(root);
+        cq.add(0);
         while (!nq.isEmpty()) {
-            Node n = nq.poll(); int col = cq.poll();
-            map.putIfAbsent(col, n.val);
-            if (n.left != null) { nq.add(n.left); cq.add(col - 1); }
-            if (n.right != null) { nq.add(n.right); cq.add(col + 1); }
+            Node n = nq.poll();
+            int c = cq.poll();
+            map.putIfAbsent(c, n.v);
+            if (n.l != null) { nq.add(n.l); cq.add(c - 1); }
+            if (n.r != null) { nq.add(n.r); cq.add(c + 1); }
         }
-        System.out.println("Top View: " + map.values());
+        System.out.println("Top: " + map.values());
     }
 
-    // Bottom View — last node seen at each column
     static void bottomView(Node root) {
-        if (root == null) return;
         TreeMap<Integer, Integer> map = new TreeMap<>();
-        Queue<Node> nq = new LinkedList<>(); Queue<Integer> cq = new LinkedList<>();
-        nq.add(root); cq.add(0);
+        Queue<Node> nq = new LinkedList<>();
+        Queue<Integer> cq = new LinkedList<>();
+        nq.add(root);
+        cq.add(0);
         while (!nq.isEmpty()) {
-            Node n = nq.poll(); int col = cq.poll();
-            map.put(col, n.val); // Always overwrite — last one wins
-            if (n.left != null) { nq.add(n.left); cq.add(col - 1); }
-            if (n.right != null) { nq.add(n.right); cq.add(col + 1); }
+            Node n = nq.poll();
+            int c = cq.poll();
+            map.put(c, n.v);
+            if (n.l != null) { nq.add(n.l); cq.add(c - 1); }
+            if (n.r != null) { nq.add(n.r); cq.add(c + 1); }
         }
-        System.out.println("Bottom View: " + map.values());
+        System.out.println("Bottom: " + map.values());
     }
 
     public static void main(String[] args) {
-        //       1
-        //      / \
-        //     2   3
-        //    / \ / \
-        //   4  5 6  7
-        Node root = new Node(1);
-        root.left = new Node(2); root.right = new Node(3);
-        root.left.left = new Node(4); root.left.right = new Node(5);
-        root.right.left = new Node(6); root.right.right = new Node(7);
-
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Build tree:");
+        Node root = build(sc);
+        if (root == null) return;
         leftView(root);
         rightView(root);
         topView(root);

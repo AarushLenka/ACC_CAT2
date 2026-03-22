@@ -2,48 +2,57 @@ import java.util.*;
 
 public class BoundaryTraversal {
     static class Node {
-        int val; Node left, right;
-        Node(int v) { val = v; }
+        int v;
+        Node l, r;
+        Node(int v) { this.v = v; }
     }
 
-    static void leftBoundary(Node n, List<Integer> res) {
-        if (n == null || (n.left == null && n.right == null)) return;
-        res.add(n.val);
-        leftBoundary(n.left != null ? n.left : n.right, res);
+    static void lb(Node n, List<Integer> res) {
+        if (n == null || (n.l == null && n.r == null)) return;
+        res.add(n.v);
+        lb(n.l != null ? n.l : n.r, res);
     }
 
-    static void leaves(Node n, List<Integer> res) {
+    static void leaf(Node n, List<Integer> res) {
         if (n == null) return;
-        if (n.left == null && n.right == null) { res.add(n.val); return; }
-        leaves(n.left, res); leaves(n.right, res);
+        if (n.l == null && n.r == null) {
+            res.add(n.v);
+            return;
+        }
+        leaf(n.l, res);
+        leaf(n.r, res);
     }
 
-    static void rightBoundary(Node n, List<Integer> res) {
-        if (n == null || (n.left == null && n.right == null)) return;
-        rightBoundary(n.right != null ? n.right : n.left, res);
-        res.add(n.val); // Add in reverse (bottom-up)
+    static void rb(Node n, List<Integer> res) {
+        if (n == null || (n.l == null && n.r == null)) return;
+        rb(n.r != null ? n.r : n.l, res);
+        res.add(n.v);
     }
 
-    static List<Integer> boundaryTraversal(Node root) {
-        List<Integer> res = new ArrayList<>();
-        if (root == null) return res;
-        res.add(root.val);
-        leftBoundary(root.left, res);
-        leaves(root.left, res); leaves(root.right, res);
-        rightBoundary(root.right, res);
-        return res;
+    static Node build(Scanner sc) {
+        System.out.print("Val (-1=null): ");
+        int v = sc.nextInt();
+        if (v == -1) return null;
+        Node n = new Node(v);
+        System.out.println("--Left of " + v + "--");
+        n.l = build(sc);
+        System.out.println("--Right of " + v + "--");
+        n.r = build(sc);
+        return n;
     }
 
     public static void main(String[] args) {
-        //       1
-        //      / \
-        //     2   3
-        //    / \ / \
-        //   4  5 6  7
-        Node root = new Node(1);
-        root.left = new Node(2); root.right = new Node(3);
-        root.left.left = new Node(4); root.left.right = new Node(5);
-        root.right.left = new Node(6); root.right.right = new Node(7);
-        System.out.println("Boundary: " + boundaryTraversal(root));
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Build tree:");
+        Node root = build(sc);
+        List<Integer> res = new ArrayList<>();
+        if (root != null) {
+            res.add(root.v);
+            lb(root.l, res);
+            leaf(root.l, res);
+            leaf(root.r, res);
+            rb(root.r, res);
+        }
+        System.out.println("Boundary: " + res);
     }
 }

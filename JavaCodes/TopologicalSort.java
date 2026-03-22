@@ -1,34 +1,37 @@
 import java.util.*;
 
 public class TopologicalSort {
-    // Kahn's Algorithm (BFS-based)
-    static List<Integer> topoSort(int V, List<List<Integer>> adj) {
-        int[] indegree = new int[V];
-        for (List<Integer> neighbors : adj)
-            for (int v : neighbors) indegree[v]++;
-
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Vertices: ");
+        int V = sc.nextInt();
+        System.out.print("Edges: ");
+        int E = sc.nextInt();
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < V; i++)
+            adj.add(new ArrayList<>());
+        int[] in = new int[V];
+        System.out.println("Enter directed edges (u v):");
+        for (int i = 0; i < E; i++) {
+            int u = sc.nextInt();
+            int v = sc.nextInt();
+            adj.get(u).add(v);
+            in[v]++;
+        }
         Queue<Integer> q = new LinkedList<>();
-        for (int i = 0; i < V; i++) if (indegree[i] == 0) q.add(i);
-
-        List<Integer> result = new ArrayList<>();
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < V; i++)
+            if (in[i] == 0)
+                q.add(i);
         while (!q.isEmpty()) {
             int u = q.poll();
-            result.add(u);
+            res.add(u);
             for (int v : adj.get(u))
-                if (--indegree[v] == 0) q.add(v);
+                if (--in[v] == 0)
+                    q.add(v);
         }
-
-        if (result.size() != V) System.out.println("Cycle detected! Not a DAG.");
-        return result;
-    }
-
-    public static void main(String[] args) {
-        int V = 6;
-        List<List<Integer>> adj = new ArrayList<>();
-        for (int i = 0; i < V; i++) adj.add(new ArrayList<>());
-        // Directed edges
-        int[][] edges = {{5,2},{5,0},{4,0},{4,1},{2,3},{3,1}};
-        for (int[] e : edges) adj.get(e[0]).add(e[1]);
-        System.out.println("Topological Order: " + topoSort(V, adj));
+        if (res.size() != V)
+            System.out.println("Cycle detected!");
+        System.out.println("Topo Order: " + res);
     }
 }

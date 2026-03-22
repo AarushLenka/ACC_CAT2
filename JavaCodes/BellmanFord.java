@@ -1,31 +1,34 @@
-import java.util.Arrays;
+import java.util.*;
 
 public class BellmanFord {
-    static void bellmanFord(int V, int[][] edges, int src) {
-        int[] dist = new int[V];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        dist[src] = 0;
-
-        // Relax all edges V-1 times
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Vertices: ");
+        int V = sc.nextInt();
+        System.out.print("Edges: ");
+        int E = sc.nextInt();
+        int[][] e = new int[E][3];
+        System.out.println("Enter edges (u v weight):");
+        for (int i = 0; i < E; i++) {
+            e[i][0] = sc.nextInt();
+            e[i][1] = sc.nextInt();
+            e[i][2] = sc.nextInt();
+        }
+        System.out.print("Source: ");
+        int s = sc.nextInt();
+        int[] d = new int[V];
+        Arrays.fill(d, Integer.MAX_VALUE);
+        d[s] = 0;
         for (int i = 0; i < V - 1; i++)
-            for (int[] e : edges) // e = {u, v, w}
-                if (dist[e[0]] != Integer.MAX_VALUE && dist[e[0]] + e[2] < dist[e[1]])
-                    dist[e[1]] = dist[e[0]] + e[2];
-
-        // Check for negative weight cycles
-        for (int[] e : edges)
-            if (dist[e[0]] != Integer.MAX_VALUE && dist[e[0]] + e[2] < dist[e[1]]) {
-                System.out.println("Negative weight cycle detected!");
+            for (int[] ed : e)
+                if (d[ed[0]] != Integer.MAX_VALUE && d[ed[0]] + ed[2] < d[ed[1]])
+                    d[ed[1]] = d[ed[0]] + ed[2];
+        for (int[] ed : e)
+            if (d[ed[0]] != Integer.MAX_VALUE && d[ed[0]] + ed[2] < d[ed[1]]) {
+                System.out.println("Negative cycle!");
                 return;
             }
-
-        System.out.println("Vertex\tDistance from Source " + src);
-        for (int i = 0; i < V; i++) System.out.println(i + "\t" + dist[i]);
-    }
-
-    public static void main(String[] args) {
-        int V = 5;
-        int[][] edges = {{0,1,6},{0,2,7},{1,2,8},{1,3,5},{1,4,-4},{2,3,-3},{2,4,9},{3,1,-2},{4,0,2},{4,3,7}};
-        bellmanFord(V, edges, 0);
+        for (int i = 0; i < V; i++)
+            System.out.println(i + " -> " + d[i]);
     }
 }

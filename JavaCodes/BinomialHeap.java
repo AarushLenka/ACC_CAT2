@@ -2,80 +2,97 @@ import java.util.*;
 
 public class BinomialHeap {
     static class Node {
-        int key, degree;
-        Node child, sibling, parent;
+        int key, deg;
+        Node child, sib, par;
         Node(int k) { key = k; }
     }
 
     static Node head;
 
-    static Node merge(Node h1, Node h2) {
-        if (h1 == null) return h2;
-        if (h2 == null) return h1;
-        Node head, tail;
-        if (h1.degree <= h2.degree) { head = h1; h1 = h1.sibling; }
-        else { head = h2; h2 = h2.sibling; }
-        tail = head;
-        while (h1 != null && h2 != null) {
-            if (h1.degree <= h2.degree) { tail.sibling = h1; h1 = h1.sibling; }
-            else { tail.sibling = h2; h2 = h2.sibling; }
-            tail = tail.sibling;
+    static Node merge(Node a, Node b) {
+        if (a == null) return b;
+        if (b == null) return a;
+        Node h, t;
+        if (a.deg <= b.deg) { h = a; a = a.sib; }
+        else { h = b; b = b.sib; }
+        t = h;
+        while (a != null && b != null) {
+            if (a.deg <= b.deg) { t.sib = a; a = a.sib; }
+            else { t.sib = b; b = b.sib; }
+            t = t.sib;
         }
-        tail.sibling = (h1 != null) ? h1 : h2;
-        return head;
+        t.sib = (a != null) ? a : b;
+        return h;
     }
 
-    static Node link(Node y, Node z) { // Make y child of z
-        y.parent = z; y.sibling = z.child; z.child = y; z.degree++; return z;
+    static Node link(Node y, Node z) {
+        y.par = z;
+        y.sib = z.child;
+        z.child = y;
+        z.deg++;
+        return z;
     }
 
-    static Node union(Node h1, Node h2) {
-        Node h = merge(h1, h2);
+    static Node union(Node a, Node b) {
+        Node h = merge(a, b);
         if (h == null) return null;
-        Node prev = null, curr = h, next = curr.sibling;
-        while (next != null) {
-            if (curr.degree != next.degree || (next.sibling != null && next.sibling.degree == curr.degree)) {
-                prev = curr; curr = next;
-            } else if (curr.key <= next.key) {
-                curr.sibling = next.sibling; link(next, curr);
+        Node p = null, c = h, n = c.sib;
+        while (n != null) {
+            if (c.deg != n.deg || (n.sib != null && n.sib.deg == c.deg)) {
+                p = c;
+                c = n;
+            } else if (c.key <= n.key) {
+                c.sib = n.sib;
+                link(n, c);
             } else {
-                if (prev == null) h = next; else prev.sibling = next;
-                link(curr, next); curr = next;
+                if (p == null) h = n;
+                else p.sib = n;
+                link(c, n);
+                c = n;
             }
-            next = curr.sibling;
+            n = c.sib;
         }
         return h;
     }
 
-    static void insert(int key) {
-        Node n = new Node(key);
-        head = union(head, n);
+    static void insert(int k) {
+        head = union(head, new Node(k));
     }
 
     static int getMin() {
-        int min = Integer.MAX_VALUE;
-        for (Node n = head; n != null; n = n.sibling) min = Math.min(min, n.key);
-        return min;
+        int m = Integer.MAX_VALUE;
+        for (Node n = head; n != null; n = n.sib)
+            m = Math.min(m, n.key);
+        return m;
     }
 
     static int extractMin() {
-        Node minPrev = null, min = head, prev = null;
-        for (Node n = head; n != null; prev = n, n = n.sibling)
-            if (n.key < min.key) { min = n; minPrev = prev; }
-        if (minPrev == null) head = min.sibling; else minPrev.sibling = min.sibling;
-        // Reverse children of min
-        Node child = min.child, revHead = null;
-        while (child != null) {
-            Node next = child.sibling; child.sibling = revHead; child.parent = null; revHead = child; child = next;
+        Node mp = null, mn = head, p = null;
+        for (Node n = head; n != null; p = n, n = n.sib)
+            if (n.key < mn.key) { mn = n; mp = p; }
+        if (mp == null) head = mn.sib;
+        else mp.sib = mn.sib;
+        Node c = mn.child, r = null;
+        while (c != null) {
+            Node nx = c.sib;
+            c.sib = r;
+            c.par = null;
+            r = c;
+            c = nx;
         }
-        head = union(head, revHead);
-        return min.key;
+        head = union(head, r);
+        return mn.key;
     }
 
     public static void main(String[] args) {
-        for (int v : new int[]{12, 7, 25, 15, 28, 33, 41}) insert(v);
+        Scanner sc = new Scanner(System.in);
+        System.out.print("n: ");
+        int n = sc.nextInt();
+        System.out.print("Elements: ");
+        for (int i = 0; i < n; i++)
+            insert(sc.nextInt());
         System.out.println("Min: " + getMin());
-        System.out.println("Extract Min: " + extractMin());
-        System.out.println("New Min: " + getMin());
+        System.out.println("ExtractMin: " + extractMin());
+        System.out.println("NewMin: " + getMin());
     }
 }

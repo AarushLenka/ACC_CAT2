@@ -1,41 +1,50 @@
 import java.util.*;
 
 public class DialsAlgorithm {
-    static void dial(List<int[]>[] adj, int V, int src, int maxW) {
-        int[] dist = new int[V];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        dist[src] = 0;
-
-        // Create buckets: one for each possible distance (0 to (V-1)*maxW)
-        int maxDist = (V - 1) * maxW;
-        List<List<Integer>> buckets = new ArrayList<>();
-        for (int i = 0; i <= maxDist; i++) buckets.add(new LinkedList<>());
-        buckets.get(0).add(src);
-
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Vertices: ");
+        int V = sc.nextInt();
+        System.out.print("Edges: ");
+        int E = sc.nextInt();
+        System.out.print("MaxWeight: ");
+        int W = sc.nextInt();
+        List<int[]>[] adj = new List[V];
+        for (int i = 0; i < V; i++)
+            adj[i] = new ArrayList<>();
+        System.out.println("Enter edges (u v w):");
+        for (int i = 0; i < E; i++) {
+            int u = sc.nextInt();
+            int v = sc.nextInt();
+            int w = sc.nextInt();
+            adj[u].add(new int[]{v, w});
+            adj[v].add(new int[]{u, w});
+        }
+        System.out.print("Source: ");
+        int s = sc.nextInt();
+        int[] d = new int[V];
+        Arrays.fill(d, Integer.MAX_VALUE);
+        d[s] = 0;
+        int mx = (V - 1) * W;
+        List<List<Integer>> bkt = new ArrayList<>();
+        for (int i = 0; i <= mx; i++)
+            bkt.add(new LinkedList<>());
+        bkt.get(0).add(s);
         int idx = 0;
-        while (idx <= maxDist) {
-            while (idx <= maxDist && buckets.get(idx).isEmpty()) idx++;
-            if (idx > maxDist) break;
-            int u = buckets.get(idx).remove(0);
-            for (int[] e : adj[u]) { // e = {v, w}
-                if (dist[u] + e[1] < dist[e[0]]) {
-                    dist[e[0]] = dist[u] + e[1];
-                    buckets.get(dist[e[0]]).add(e[0]);
+        while (idx <= mx) {
+            while (idx <= mx && bkt.get(idx).isEmpty())
+                idx++;
+            if (idx > mx) break;
+            int u = bkt.get(idx).remove(0);
+            for (int[] e : adj[u]) {
+                if (d[u] + e[1] < d[e[0]]) {
+                    d[e[0]] = d[u] + e[1];
+                    bkt.get(d[e[0]]).add(e[0]);
                 }
             }
         }
-
-        System.out.println("Vertex\tDist from " + src);
-        for (int i = 0; i < V; i++) System.out.println(i + "\t" + dist[i]);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static void main(String[] args) {
-        int V = 5, maxW = 4;
-        List<int[]>[] adj = new List[V];
-        for (int i = 0; i < V; i++) adj[i] = new ArrayList<>();
-        int[][] edges = {{0,1,2},{0,2,4},{1,2,1},{1,3,3},{2,3,2},{2,4,1},{3,4,4}};
-        for (int[] e : edges) { adj[e[0]].add(new int[]{e[1], e[2]}); adj[e[1]].add(new int[]{e[0], e[2]}); }
-        dial(adj, V, 0, maxW);
+        for (int i = 0; i < V; i++)
+            System.out.println(i + " -> " + d[i]);
     }
 }

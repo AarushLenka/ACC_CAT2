@@ -1,42 +1,54 @@
-import java.util.Arrays;
+import java.util.*;
 
 public class KAryHeap {
-    static int k;
-    static int[] heap;
-    static int size = 0;
+    static int k, sz = 0;
+    static int[] h;
 
-    KAryHeap(int cap, int k) { this.k = k; heap = new int[cap]; }
-
-    static void insert(int val) {
-        heap[size++] = val;
-        int i = size - 1;
-        while (i > 0 && heap[i] > heap[(i - 1) / k]) {
-            int t = heap[i]; heap[i] = heap[(i - 1) / k]; heap[(i - 1) / k] = t;
+    static void insert(int v) {
+        h[sz++] = v;
+        int i = sz - 1;
+        while (i > 0 && h[i] > h[(i - 1) / k]) {
+            int t = h[i];
+            h[i] = h[(i - 1) / k];
+            h[(i - 1) / k] = t;
             i = (i - 1) / k;
         }
     }
 
-    static void maxHeapify(int i) {
-        int max = i;
+    static void heapify(int i) {
+        int m = i;
         for (int j = 1; j <= k; j++) {
-            int child = k * i + j;
-            if (child < size && heap[child] > heap[max]) max = child;
+            int c = k * i + j;
+            if (c < sz && h[c] > h[m])
+                m = c;
         }
-        if (max != i) { int t = heap[i]; heap[i] = heap[max]; heap[max] = t; maxHeapify(max); }
+        if (m != i) {
+            int t = h[i];
+            h[i] = h[m];
+            h[m] = t;
+            heapify(m);
+        }
     }
 
     static int extractMax() {
-        int max = heap[0];
-        heap[0] = heap[--size];
-        maxHeapify(0);
-        return max;
+        int m = h[0];
+        h[0] = h[--sz];
+        heapify(0);
+        return m;
     }
 
     public static void main(String[] args) {
-        KAryHeap h = new KAryHeap(20, 3); // 3-ary max heap
-        for (int v : new int[]{10, 20, 15, 30, 40, 5, 25}) insert(v);
-        System.out.println("Heap: " + Arrays.toString(Arrays.copyOf(heap, size)));
-        System.out.println("Extract Max: " + extractMax());
-        System.out.println("After extract: " + Arrays.toString(Arrays.copyOf(heap, size)));
+        Scanner sc = new Scanner(System.in);
+        System.out.print("K: ");
+        k = sc.nextInt();
+        System.out.print("n: ");
+        int n = sc.nextInt();
+        h = new int[n + 10];
+        System.out.print("Elements: ");
+        for (int i = 0; i < n; i++)
+            insert(sc.nextInt());
+        System.out.println("Heap: " + Arrays.toString(Arrays.copyOf(h, sz)));
+        System.out.println("ExtractMax: " + extractMax());
+        System.out.println("After: " + Arrays.toString(Arrays.copyOf(h, sz)));
     }
 }

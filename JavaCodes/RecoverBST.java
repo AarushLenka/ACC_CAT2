@@ -1,50 +1,60 @@
+import java.util.*;
+
 public class RecoverBST {
     static class Node {
-        int val; Node left, right;
-        Node(int v) { val = v; }
+        int v;
+        Node l, r;
+        Node(int v) { this.v = v; }
     }
 
     static Node first, second, prev;
 
-    // Approach 1: Inorder traversal + two-pointer
-    static void inorder(Node root) {
-        if (root == null) return;
-        inorder(root.left);
-        if (prev != null && prev.val > root.val) {
-            if (first == null) first = prev;
-            second = root;
-        }
-        prev = root;
-        inorder(root.right);
-    }
-
-    static void recoverBST(Node root) {
-        first = second = prev = null;
-        inorder(root);
-        if (first != null && second != null) {
-            int t = first.val; first.val = second.val; second.val = t;
-        }
-    }
-
-    static void printInorder(Node n) {
+    static void inorder(Node n) {
         if (n == null) return;
-        printInorder(n.left);
-        System.out.print(n.val + " ");
-        printInorder(n.right);
+        inorder(n.l);
+        if (prev != null && prev.v > n.v) {
+            if (first == null) first = prev;
+            second = n;
+        }
+        prev = n;
+        inorder(n.r);
+    }
+
+    static void print(Node n) {
+        if (n == null) return;
+        print(n.l);
+        System.out.print(n.v + " ");
+        print(n.r);
+    }
+
+    static Node build(Scanner sc) {
+        System.out.print("Val (-1=null): ");
+        int v = sc.nextInt();
+        if (v == -1) return null;
+        Node n = new Node(v);
+        System.out.println("--Left of " + v + "--");
+        n.l = build(sc);
+        System.out.println("--Right of " + v + "--");
+        n.r = build(sc);
+        return n;
     }
 
     public static void main(String[] args) {
-        //     3           2
-        //    / \   =>    / \
-        //   1   4       1   4
-        //      /           /
-        //     2           3
-        Node root = new Node(3);
-        root.left = new Node(1);
-        root.right = new Node(4);
-        root.right.left = new Node(2);
-        System.out.print("Before: "); printInorder(root); System.out.println();
-        recoverBST(root);
-        System.out.print("After:  "); printInorder(root); System.out.println();
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Build BST (2 nodes swapped, -1=null):");
+        Node root = build(sc);
+        System.out.print("Before: ");
+        print(root);
+        System.out.println();
+        first = second = prev = null;
+        inorder(root);
+        if (first != null && second != null) {
+            int t = first.v;
+            first.v = second.v;
+            second.v = t;
+        }
+        System.out.print("After:  ");
+        print(root);
+        System.out.println();
     }
 }
